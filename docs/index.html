@@ -1,0 +1,101 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Niveles de embalses de Puerto Rico</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:#f4f7fa;color:#1c2733}
+header{background:#0b3d5c;color:#fff;padding:14px 16px}h1{margin:0;font-size:20px}
+header small{opacity:.85}main{max-width:900px;margin:auto;padding:12px}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+select,button{font-size:16px;padding:11px;border-radius:8px;border:1px solid #c5d0db}
+select{flex:1;min-width:0}button{background:#0b3d5c;color:#fff;border:0;cursor:pointer}
+#map{height:300px;border-radius:12px}
+.card{background:#fff;border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 1px 3px #0002}
+.estado{font-size:24px;font-weight:700}.sub{color:#5b6b7a;font-size:14px}
+.nums{display:flex;gap:10px;margin-top:10px}
+.nums div{flex:1;background:#f4f7fa;border-radius:10px;padding:10px;text-align:center;font-size:13px}
+.nums b{display:block;font-size:26px;color:#1c2733}
+.lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
+.item{background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;border-left:6px solid #999;box-shadow:0 1px 3px #0002}
+.item b{display:block}.aviso{font-size:12px;color:#5b6b7a;margin:16px 4px}
+</style></head><body>
+<header><h1>💧 Embalses de Puerto Rico</h1><small id="act">Cargando…</small></header>
+<main>
+  <div class="bar"><select id="sel"></select><button id="gps">📍 Cerca de mí</button></div>
+  <div id="map"></div>
+  <div class="card" id="det">Toca un embalse en el mapa o en la lista.</div>
+  <div class="card"><canvas id="g" height="160"></canvas></div>
+  <div class="lista" id="lista"></div>
+  <p class="aviso">Estimaciones generadas por un modelo estadístico con datos de USGS y Open-Meteo.
+  No son alertas oficiales. En emergencias, siga al Servicio Nacional de Meteorología y a las autoridades locales.</p>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const COL = {sube:'#d84315', baja:'#1565c0', estable:'#2e7d32', sin:'#9e9e9e'};
+let D, map, chart, marcas = {};
+
+const km = (a,b,c,d) => { const r = x => x*Math.PI/180,
+  h = Math.sin(r(c-a)/2)**2 + Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;
+  return 12742*Math.asin(Math.sqrt(h)); };
+const cerca = (lat,lon) => D.sitios.reduce((m,s) => km(lat,lon,s.lat,s.lon) < km(lat,lon,m.lat,m.lon) ? s : m);
+
+function estado(s){
+  if (s.estado !== 'ok') return {k:'sin', t:'Sin datos por ahora', i:'⚪'};
+  const d = s.nivel_predicho_6h - s.nivel_actual, u = Math.max(0.2, s.error_tipico);
+  if (d >  u) return {k:'sube',    t:'Subiendo', i:'🔺'};
+  if (d < -u) return {k:'baja',    t:'Bajando',  i:'🔻'};
+  return            {k:'estable', t:'Estable',  i:'🟢'};
+}
+
+fetch('data/predicciones.json?' + Date.now()).then(r => r.json()).then(j => {
+  D = j;
+  const t = new Date(j.actualizado.replace(' ','T') + '-04:00');   // hora de Puerto Rico
+  const min = Math.round((Date.now() - t) / 60000);
+  $('act').textContent = 'Actualizado ' + (min < 90 ? `hace ${min} min` : t.toLocaleString('es-PR'));
+
+  map = L.map('map').setView([18.2,-66.45], 9);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'}).addTo(map);
+  map.on('click', e => elegir(cerca(e.latlng.lat, e.latlng.lng).id));   // clic en cualquier punto → más cercano
+
+  D.sitios.forEach(s => {
+    const e = estado(s);
+    $('sel').add(new Option(s.nombre, s.id));
+    marcas[s.id] = L.circleMarker([s.lat,s.lon], {radius:11, color:'#fff', weight:2,
+      fillColor:COL[e.k], fillOpacity:1}).addTo(map).bindTooltip(s.nombre).on('click', () => elegir(s.id));
+    const d = document.createElement('div'); d.className = 'item'; d.style.borderColor = COL[e.k];
+    d.innerHTML = `<b>${s.nombre}</b>${e.i} ${e.t}` + (s.estado==='ok' ? ` · ${s.nivel_actual} → ${s.nivel_predicho_6h} ft` : '');
+    d.onclick = () => { elegir(s.id); scrollTo({top:0, behavior:'smooth'}); };
+    $('lista').appendChild(d);
+  });
+  elegir(location.hash.slice(1) in marcas ? location.hash.slice(1) : D.sitios[0].id);
+});
+
+$('sel').onchange = () => elegir($('sel').value);
+$('gps').onclick = () => navigator.geolocation.getCurrentPosition(
+  p => elegir(cerca(p.coords.latitude, p.coords.longitude).id),
+  () => alert('No se pudo obtener tu ubicación. Elige un embalse en el mapa.'));
+
+async function elegir(id){
+  const s = D.sitios.find(x => x.id === id), e = estado(s);
+  $('sel').value = id; location.hash = id; map.flyTo([s.lat,s.lon], 10);
+  $('det').innerHTML = s.estado !== 'ok'
+    ? `<div class="estado">${s.nombre}</div><p class="sub">Este sitio no tiene datos recientes del sensor o aún no tiene modelo entrenado.</p>`
+    : `<div class="estado" style="color:${COL[e.k]}">${e.i} ${e.t}</div><div class="sub">${s.nombre}</div>
+       <div class="nums"><div>Ahora<b>${s.nivel_actual} ft</b></div>
+       <div>En 6 horas<b>${s.nivel_predicho_6h} ft</b></div>
+       <div>Margen típico<b>±${s.error_tipico}</b></div></div>
+       <p class="sub">Última medición: ${s.hora_medicion.slice(5,16).replace('T',' ')}.
+       Se considera “estable” si el cambio previsto es menor que el margen de error del modelo.</p>`;
+  if (chart) chart.destroy();
+  if (s.estado !== 'ok') return;
+  const h = await (await fetch(`data/historial/${id}.json?` + Date.now())).json();
+  const lab = [...h.map(x => x.t.slice(5,16)), s.hora_objetivo.slice(5,16)];
+  chart = new Chart($('g'), {type:'line', data:{labels:lab, datasets:[
+    {label:'Medido (últimas 72 h)', data:[...h.map(x => x.nivel), null], borderColor:'#1f77b4', pointRadius:0},
+    {label:'Predicción +6 h', data:h.map((x,i) => i === h.length-1 ? x.nivel : null).concat([s.nivel_predicho_6h]),
+     borderColor:'#2ca02c', borderDash:[6,4], pointRadius:5}]},
+    options:{scales:{y:{title:{display:true, text:'Nivel (pies)'}}, x:{ticks:{maxTicksLimit:6}}}}});
+}
+</script></body></html>
