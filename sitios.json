@@ -1,4 +1,3 @@
-json
 {
   "loiza":     {"nombre": "Lago Loíza (Carraízo)", "usgs": "50059000", "lat": 18.3266, "lon": -66.0161},
   "la_plata":  {"nombre": "Lago La Plata",         "usgs": "50045000", "lat": 18.3609, "lon": -66.2330},
