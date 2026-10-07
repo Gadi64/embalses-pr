@@ -1,5 +1,5 @@
-{
-  "loiza":     {"nombre": "Lago Loíza (Carraízo)", "usgs": "50059000", "lat": 18.3266, "lon": -66.0161},
-  "la_plata":  {"nombre": "Lago La Plata",         "usgs": "50045000", "lat": 18.3609, "lon": -66.2330},
-  "guajataca": {"nombre": "Lago Guajataca",        "usgs": "50010800", "lat": 18.3984, "lon": -66.9227}
-}
+!pip install xgboost -q
+import core, json
+nuevos = core.descubrir_sitios_pr("LK")
+json.dump(nuevos, open("sitios.json", "w"), ensure_ascii=False, indent=1)
+print(len(nuevos), "sitios encontrados")
