@@ -6,11 +6,11 @@ on:
       desde: {description: "Cargar histórico desde (AAAA-MM-DD)", required: false}
 permissions:
   contents: write
-concurrency: actualizar
+concurrency: {group: actualizar, cancel-in-progress: false}
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
