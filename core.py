@@ -186,7 +186,7 @@ def predecir(clave):
     nivel = float(fila["gage_height"].iloc[0])
     return {"sitio": SITIOS[clave]["nombre"], "hora_medicion": str(fila.index[0]),
             "hora_objetivo": str(fila.index[0] + pd.Timedelta(hours=HORIZONTE)),
-            "nivel_actual": round(nivel, 2), "nivel_predicho_24h": round(nivel + delta, 2),
+            "nivel_actual": round(nivel, 2), "nivel_predicho": round(nivel + delta, 2),
             "error_tipico": round(art["mae"], 2)}
 
 def historial(clave, horas=48):
