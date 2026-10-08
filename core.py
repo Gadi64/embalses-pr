@@ -1,4 +1,4 @@
-import io, re, json, requests, joblib
+import io, re, json, time, requests, joblib
 import numpy as np, pandas as pd
 from math import radians, sin, cos, asin, sqrt
 from pathlib import Path
@@ -17,10 +17,18 @@ def ahora():
     # Hora local de PR sin zona, igual que los datos de USGS y Open-Meteo
     return pd.Timestamp.now(tz="America/Puerto_Rico").tz_localize(None)
 
-def _get(url, params):
-    r = requests.get(url, params=params, timeout=60)
-    r.raise_for_status()
-    return r
+def _get(url, params, intentos=4):
+    for i in range(intentos):
+        try:
+            r = requests.get(url, params=params, timeout=90)
+            if r.status_code < 500 and r.status_code != 429:
+                r.raise_for_status()
+                return r
+        except (requests.ConnectionError, requests.Timeout):
+            pass
+        if i < intentos - 1:
+            time.sleep(5 * (i + 1))
+    raise RuntimeError(f"Sin respuesta de {url.split('/')[2]} tras {intentos} intentos")
 
 # ---------- Selección de área ----------
 def _km(lat1, lon1, lat2, lon2):
@@ -73,6 +81,10 @@ def descargar_usgs(site, desde=None, hasta=None):
     else:
         p["period"] = "PT72H"
     return parsear_usgs(_get(USGS_IV, p).text)
+    except requests.HTTPError as e:
+        if e.response is not None and e.response.status_code == 404:
+            return parsear_usgs("")
+        raise
 
 def descargar_meteo(lat, lon, desde, hasta):
     base = {"latitude": lat, "longitude": lon, "timezone": "America/Puerto_Rico",
@@ -91,7 +103,12 @@ def descargar_meteo(lat, lon, desde, hasta):
 
 # ---------- Almacenamiento incremental ----------
 def _ruta(clave, tipo): return DATA / f"{SITIOS[clave]['usgs']}_{tipo}.csv"
-def _leer(r): return pd.read_csv(r, parse_dates=["datetime"]) if r.exists() else pd.DataFrame(columns=["datetime"])
+def _leer(r):
+    if not r.exists():
+        return pd.DataFrame({"datetime": pd.to_datetime([])})
+    d = pd.read_csv(r)
+    d["datetime"] = pd.to_datetime(d["datetime"], errors="coerce")
+    return d
 def _unir(a, b):
     return (pd.concat([a, b]).drop_duplicates("datetime", keep="last")
             .sort_values("datetime").reset_index(drop=True))
