@@ -9,7 +9,7 @@ DATA, MODELOS = Path("data"), Path("modelos")
 DATA.mkdir(exist_ok=True); MODELOS.mkdir(exist_ok=True)
 SITIOS = json.loads(Path("sitios.json").read_text(encoding="utf-8"))
 
-HORIZONTE, LAGS = 6, [1, 3, 6, 12, 24]
+HORIZONTE, LAGS = 24, [1, 3, 6, 12, 24]
 PRIORIDAD_NIVEL = ["00065", "72379"]
 USGS_IV = "https://waterservices.usgs.gov/nwis/iv/"
 
