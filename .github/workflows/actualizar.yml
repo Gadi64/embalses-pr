@@ -3,13 +3,23 @@ on:
   schedule: [{cron: "7 * * * *"}]
   workflow_dispatch:
     inputs:
-      desde: {description: "Cargar histórico desde (AAAA-MM-DD)", required: false}
+      desde: {description: "Cargar historico desde (AAAA-MM-DD)", required: false}
 permissions:
   contents: write
 concurrency: {group: actualizar, cancel-in-progress: false}
 jobs:
- - run: |
-          git config user.name "bot"; git config user.email "bot@users.noreply.github.com"
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -r requirements.txt
+      - run: python generar.py "${{ inputs.desde }}"
+      - run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
           git add -A
           if ! git diff --cached --quiet; then
             git commit -m "datos $(date -u +%FT%TZ)"
