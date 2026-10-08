@@ -80,7 +80,8 @@ def descargar_usgs(site, desde=None, hasta=None):
             p["endDT"] = str(pd.Timestamp(hasta).date())
     else:
         p["period"] = "PT72H"
-    return parsear_usgs(_get(USGS_IV, p).text)
+    try:
+        return parsear_usgs(_get(USGS_IV, p).text)
     except requests.HTTPError as e:
         if e.response is not None and e.response.status_code == 404:
             return parsear_usgs("")
