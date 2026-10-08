@@ -10,7 +10,7 @@ DATA.mkdir(exist_ok=True); MODELOS.mkdir(exist_ok=True)
 SITIOS = json.loads(Path("sitios.json").read_text(encoding="utf-8"))
 
 HORIZONTE, LAGS = 6, [1, 3, 6, 12, 24]
-PRIORIDAD_NIVEL = ["00065", "72379", "72375", "72376", "72380", "62614", "62615", "00062", "72036"]
+PRIORIDAD_NIVEL = ["00065", "72379"]
 USGS_IV = "https://waterservices.usgs.gov/nwis/iv/"
 
 def ahora():
@@ -125,8 +125,9 @@ def actualizar_sitio(clave, desde=None):
     else:
         ini = hoy - pd.Timedelta(days=120)
     ini = ini.normalize()
-    for a in pd.date_range(ini, hoy, freq="60D"):          # tramos de 60 días
-        u = _unir(u, descargar_usgs(s["usgs"], a, min(a + pd.Timedelta(days=60), hoy)))
+    for a in pd.date_range(ini, hoy, freq="15D"):
+        u = _unir(u, descargar_usgs(s["usgs"], a, min(a + pd.Timedelta(days=15), hoy)))
+        time.sleep(1)
     m = _unir(m, descargar_meteo(s["lat"], s["lon"], ini, hoy))
     u.to_csv(_ruta(clave, "usgs"), index=False)
     m.to_csv(_ruta(clave, "meteo"), index=False)
