@@ -84,7 +84,7 @@ async function elegir(id){
     ? `<div class="estado">${s.nombre}</div><p class="sub">Este sitio no tiene datos recientes del sensor o aún no tiene modelo entrenado.</p>`
     : `<div class="estado" style="color:${COL[e.k]}">${e.i} ${e.t}</div><div class="sub">${s.nombre}</div>
        <div class="nums"><div>Ahora<b>${s.nivel_actual} ft</b></div>
-       <div>En 6 horas<b>${s.nivel_predicho} ft</b></div>
+       <div>En 24 horas<b>${s.nivel_predicho} ft</b></div>
        <div>Margen típico<b>±${s.error_tipico}</b></div></div>
        <p class="sub">Última medición: ${s.hora_medicion.slice(5,16).replace('T',' ')}.
        Se considera “estable” si el cambio previsto es menor que el margen de error del modelo.</p>`;
@@ -94,7 +94,7 @@ async function elegir(id){
   const lab = [...h.map(x => x.t.slice(5,16)), s.hora_objetivo.slice(5,16)];
   chart = new Chart($('g'), {type:'line', data:{labels:lab, datasets:[
     {label:'Medido (últimas 72 h)', data:[...h.map(x => x.nivel), null], borderColor:'#1f77b4', pointRadius:0},
-    {label:'Predicción +6 h', data:h.map((x,i) => i === h.length-1 ? x.nivel : null).concat([s.nivel_predicho]),
+    {label:'Predicción +24 h', data:h.map((x,i) => i === h.length-1 ? x.nivel : null).concat([s.nivel_predicho]),
      borderColor:'#2ca02c', borderDash:[6,4], pointRadius:5}]},
     options:{scales:{y:{title:{display:true, text:'Nivel (pies)'}}, x:{ticks:{maxTicksLimit:6}}}}});
 }
