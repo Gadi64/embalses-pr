@@ -10,7 +10,7 @@ DATA.mkdir(exist_ok=True); MODELOS.mkdir(exist_ok=True)
 SITIOS = json.loads(Path("sitios.json").read_text(encoding="utf-8"))
 
 HORIZONTE, LAGS = 6, [1, 3, 6, 12, 24]
-PRIORIDAD_NIVEL = ["00065", "62614", "62615", "00062", "72036"]  # altura / elevación del embalse
+PRIORIDAD_NIVEL = ["00065", "72379", "72375", "72376", "72380", "62614", "62615", "00062", "72036"]
 USGS_IV = "https://waterservices.usgs.gov/nwis/iv/"
 
 def ahora():
