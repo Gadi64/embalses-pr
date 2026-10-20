@@ -17,7 +17,7 @@ for k, s in core.SITIOS.items():
         if modelo_viejo(core.MODELOS / f"{s['usgs']}.pkl"):
             core.entrenar(k)
         item.update(core.predecir(k))
-        (OUT / "historial" / f"{k}.json").write_text(json.dumps(core.historial(k, 72)))
+        (OUT / "historial" / f"{k}.json").write_text(json.dumps(core.historial(k, 24)))
     except Exception as e:
         item.update(estado="sin_datos", detalle=str(e)[:150])
     resumen.append(item)
