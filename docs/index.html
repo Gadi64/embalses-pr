@@ -93,7 +93,7 @@ async function elegir(id){
   const h = await (await fetch(`data/historial/${id}.json?` + Date.now())).json();
   const lab = [...h.map(x => x.t.slice(5,16)), s.hora_objetivo.slice(5,16)];
   chart = new Chart($('g'), {type:'line', data:{labels:lab, datasets:[
-    {label:'Medido (últimas 72 h)', data:[...h.map(x => x.nivel), null], borderColor:'#1f77b4', pointRadius:0},
+    {label:'Medido (últimas 24 h)', data:[...h.map(x => x.nivel), null], borderColor:'#1f77b4', pointRadius:0},
     {label:'Predicción +24 h', data:h.map((x,i) => i === h.length-1 ? x.nivel : null).concat([s.nivel_predicho]),
      borderColor:'#2ca02c', borderDash:[6,4], pointRadius:5}]},
     options:{scales:{y:{title:{display:true, text:'Nivel (pies)'}}, x:{ticks:{maxTicksLimit:6}}}}});
