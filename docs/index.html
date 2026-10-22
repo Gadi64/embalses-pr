@@ -91,11 +91,18 @@ async function elegir(id){
   if (chart) chart.destroy();
   if (s.estado !== 'ok') return;
   const h = await (await fetch(`data/historial/${id}.json?` + Date.now())).json();
-  const lab = [...h.map(x => x.t.slice(5,16)), s.hora_objetivo.slice(5,16)];
+  const t0 = new Date(s.hora_medicion.replace(' ','T'));
+  const n = Math.max(1, Math.round((new Date(s.hora_objetivo.replace(' ','T')) - t0) / 3600000));
+  const hs = h.slice(-(n + 1));
+  const fut = Array.from({length: n}, (_, i) => new Date(t0.getTime() + (i + 1) * 3600000));
+  const fmt = d => String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + ':00';
+  const lab = [...hs.map(x => x.t.replace(' ','T').slice(5,16)), ...fut.map(fmt)];
+  const real = [...hs.map(x => x.nivel), ...Array(n).fill(null)];
+  const nivel0 = hs.length ? hs[hs.length-1].nivel : s.nivel_actual;
+  const pred = [...Array(Math.max(hs.length-1,0)).fill(null), nivel0,
+    ...fut.map((_, i) => +(nivel0 + (s.nivel_predicho - nivel0) * (i + 1) / n).toFixed(2))];
   chart = new Chart($('g'), {type:'line', data:{labels:lab, datasets:[
-    {label:'Medido (últimas 24 h)', data:[...h.map(x => x.nivel), null], borderColor:'#1f77b4', pointRadius:0},
-    {label:'Predicción +24 h', data:h.map((x,i) => i === h.length-1 ? x.nivel : null).concat([s.nivel_predicho]),
-     borderColor:'#2ca02c', borderDash:[6,4], pointRadius:5}]},
-    options:{scales:{y:{title:{display:true, text:'Nivel (pies)'}}, x:{ticks:{maxTicksLimit:6}}}}});
-}
+    {label:'Medido (últimas ' + n + ' h)', data:real, borderColor:'#1f77b4', pointRadius:0},
+    {label:'Predicción +' + n + ' h', data:pred, borderColor:'#2ca02c', borderDash:[6,4], pointRadius:2}]},
+    options:{scales:{y:{title:{display:true, text:'Nivel (pies)'}}, x:{ticks:{maxTicksLimit:8}}}}});
 </script></body></html>
