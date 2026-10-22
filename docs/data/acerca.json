@@ -1,0 +1,17 @@
+{
+  "s50059000": {"resumen": "Lago Loíza, formado por la represa de Carraízo en el Río Grande de Loíza, en Trujillo Alto.", "importancia": "Es la fuente principal de agua potable del área metropolitana de San Juan. La sedimentación reduce su capacidad con los años, por lo que su nivel se vigila de cerca."},
+  "s50045000": {"resumen": "Lago La Plata, sobre el Río de la Plata, en Toa Alta.", "importancia": "Abastece de agua a municipios del área metropolitana y del norte, y ayuda a controlar crecidas del río."},
+  "s50010800": {"resumen": "Lago Guajataca, en el límite de Quebradillas, Isabela y San Sebastián.", "importancia": "Surte de agua al noroeste de la isla y a la zona de riego de Isabela. Su aliviadero se dañó durante el huracán María (2017) y obligó a evacuar a residentes aguas abajo."},
+  "s50027100": {"resumen": "Lago Dos Bocas, entre Utuado y Arecibo, en el Río Grande de Arecibo.", "importancia": "Aporta al abasto de agua de la región norte y tiene generación hidroeléctrica."},
+  "s50026140": {"resumen": "Lago Caonillas, en Utuado, aguas arriba de Dos Bocas.", "importancia": "Regula el caudal que llega a Dos Bocas y se usa para abasto de agua y generación hidroeléctrica."},
+  "s50113950": {"resumen": "Lago Cerrillos, en Ponce, construido por el Cuerpo de Ingenieros del Ejército de EE. UU.", "importancia": "Protege a Ponce de inundaciones, contribuye al abasto de agua del sur y es un lugar recreativo."},
+  "s50115100": {"resumen": "Lago Portugués, en Ponce, sobre el Río Portugués.", "importancia": "Forma parte del sistema de control de inundaciones del sur junto a Cerrillos."},
+  "s50111210": {"resumen": "Lago Toa Vaca, en Villalba.", "importancia": "Es una fuente importante de agua para la región sur, incluida el área de Ponce y Juana Díaz."},
+  "s50093045": {"resumen": "Lago Patillas, en Patillas, en la región sureste.", "importancia": "Se usa para agua potable y para el riego agrícola del sureste."},
+  "s50039995": {"resumen": "Lago Carite, en la zona de Guayama, Cayey y Patillas.", "importancia": "Contribuye al abasto de agua y al riego del sureste. Es el único del catálogo con medición de caudal en el aliviadero."},
+  "s50047550": {"resumen": "Lago de Cidra, en Cidra.", "importancia": "Abastece de agua a la zona de Cidra y áreas cercanas."},
+  "s50125780": {"resumen": "Lago Lucchetti, cerca de Yauco, en el suroeste.", "importancia": "Fuente de agua para la región suroeste."},
+  "s50020100": {"resumen": "Lago Garzas, cerca de Adjuntas, en la cordillera central.", "importancia": "Se usa para abasto de agua y generación hidroeléctrica."},
+  "s50071225": {"resumen": "Lago Fajardo, en la región este.", "importancia": "Contribuye al abasto de agua del área este de la isla."},
+  "s182827067040500": {"resumen": "Pequeño lago cerca de Isabela, en el noroeste.", "importancia": "Es el único sitio del catálogo que reporta la altura del medidor (parámetro 00065), por eso su nivel se ve como 409 pies."}
+}
