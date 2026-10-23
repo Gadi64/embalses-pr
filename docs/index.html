@@ -1,78 +1,142 @@
-<!doctype html><html lang="es"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Niveles de embalses de Puerto Rico</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:#f4f7fa;color:#1c2733}
-header{background:#0b3d5c;color:#fff;padding:14px 16px}h1{margin:0;font-size:20px}
-header small{opacity:.85}main{max-width:900px;margin:auto;padding:12px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,sans-serif;background:#f4f7fa;color:#1c2733}
+header{background:#0b3d5c;color:#fff;padding:14px 16px}
+h1{margin:0;font-size:20px}
+header small{opacity:.85}
+main{max-width:900px;margin:auto;padding:12px}
 .bar{display:flex;gap:8px;margin-bottom:10px}
 select,button{font-size:16px;padding:11px;border-radius:8px;border:1px solid #c5d0db}
-select{flex:1;min-width:0}button{background:#0b3d5c;color:#fff;border:0;cursor:pointer}
+select{flex:1;min-width:0}
+button{background:#0b3d5c;color:#fff;border:0;cursor:pointer}
 #map{height:300px;border-radius:12px;margin-top:12px}
 .card{background:#fff;border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 1px 3px #0002}
-.card h3{margin:0 0 6px;font-size:17px}.card p{margin:8px 0}summary{cursor:pointer}
-.estado{font-size:24px;font-weight:700}.sub{color:#5b6b7a;font-size:14px}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:8px 0}
+summary{cursor:pointer}
+.estado{font-size:24px;font-weight:700}
+.sub{color:#5b6b7a;font-size:14px}
 .nums{display:flex;gap:10px;margin-top:10px}
-.nums div{flex:1;background:#f4f7fa;border-radius:10px;padding:10px;text-align:center;font-size:13px}
-.nums b{display:block;font-size:26px;color:#1c2733}
+.nums div{flex:1;background:#f4f7fa;border-radius:10px;padding:10px;text-align:center;font-size:13px;min-width:0}
+.nums b{display:block;font-size:22px;color:#1c2733;overflow-wrap:anywhere}
 .lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
 .item{background:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;border-left:6px solid #999;box-shadow:0 1px 3px #0002}
-.item b{display:block}.aviso{font-size:12px;color:#5b6b7a;margin:16px 4px}
-</style></head><body>
-<header><h1>💧 Embalses de Puerto Rico</h1><small id="act">Cargando…</small></header>
+.item b{display:block}
+.aviso{font-size:12px;color:#5b6b7a;margin:16px 4px}
+@media(max-width:420px){.nums{gap:6px}.nums div{padding:8px}.nums b{font-size:18px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>💧 Embalses de Puerto Rico</h1>
+  <small id="act">Cargando…</small>
+</header>
+
 <main>
-  <div class="bar"><select id="sel"></select><button id="gps">📍 Cerca de mí</button></div>
+  <div class="bar">
+    <select id="sel" aria-label="Seleccionar embalse"></select>
+    <button id="gps">📍 Cerca de mí</button>
+  </div>
+
   <div class="card"><canvas id="g" height="160"></canvas></div>
-  <div class="card" id="det">Toca un embalse en el mapa o en la lista.</div>
-  <div class="card" id="sensor">
-  <h3>📡 Sensor ultrasónico</h3>
-  <p>Cargando última medición…</p>
-</div>
+
+  <div class="card" id="det">
+    Toca un embalse en el mapa o en la lista.
+  </div>
+
+  <div class="card" id="sensor" aria-live="polite">
+    <h3>📡 Sensor ultrasónico — Lago Dagüey</h3>
+    <p>Cargando última medición…</p>
+  </div>
+
   <div id="map"></div>
   <div class="card" id="acerca"></div>
   <div class="lista" id="lista"></div>
+
   <details class="card">
     <summary><b>Acerca de esta app</b></summary>
-    <p><b>Para qué sirve:</b> muestra el nivel de los embalses de Puerto Rico y estima cómo cambiará en las próximas horas, para consultarlo de un vistazo desde el celular.</p>
-    <p><b>Cómo funciona:</b> cada hora se descargan las mediciones de los sensores del Servicio Geológico de EE. UU. (USGS) y el clima de Open-Meteo. Un modelo estadístico aprende cómo responde cada embalse a la lluvia y proyecta el cambio de nivel.</p>
-    <p><b>Cómo leerla:</b> “Subiendo”, “Bajando” o “Estable” depende de si el cambio previsto supera el margen de error del modelo. Los niveles son elevaciones sobre el nivel del mar, no la profundidad del agua.</p>
-    <p><b>Límites:</b> es una herramienta informativa. No es una alerta oficial ni sustituye a las autoridades. Un sensor caído deja el embalse en gris.</p>
+    <p><b>Para qué sirve:</b> muestra información de embalses de Puerto Rico y las predicciones disponibles.</p>
+    <p><b>Cómo funciona:</b> la aplicación lee los archivos de datos publicados en este sitio. Las mediciones del sensor ultrasónico se muestran por separado de las predicciones.</p>
+    <p><b>Cómo leerla:</b> las predicciones de nivel se muestran en pies cuando están disponibles. La distancia del sensor ultrasónico no equivale directamente a la elevación del agua.</p>
+    <p><b>Límites:</b> esta es una herramienta informativa. No es una alerta oficial ni sustituye a las autoridades.</p>
   </details>
-  <p class="aviso">Estimaciones generadas por un modelo estadístico con datos de USGS y Open-Meteo.
-  No son alertas oficiales. En emergencias, siga al Servicio Nacional de Meteorología y a las autoridades locales.</p>
+
+  <p class="aviso">
+    Las predicciones no son alertas oficiales. En emergencias, siga al Servicio Nacional de Meteorología y a las autoridades locales.
+  </p>
 </main>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-const COL = {sube:'#d84315', baja:'#1565c0', estable:'#2e7d32', sin:'#9e9e9e'};
-let D, map, chart, marcas = {};
-let A = {}, actual = null;
 
-const mostrarAcerca = id => {
-  const s = D && D.sitios.find(x => x.id === id); if (!s) return;
-  const a = A[id] || {};
-  $('acerca').innerHTML = `<h3>Acerca de ${s.nombre}</h3>` +
-    `<p>${a.resumen || 'Información en preparación para este embalse.'}</p>` +
-    (a.importancia ? `<p><b>Por qué importa:</b> ${a.importancia}</p>` : '');
+const COL = {
+  sube: '#d84315',
+  baja: '#1565c0',
+  estable: '#2e7d32',
+  sin: '#9e9e9e'
 };
-fetch('data/acerca.json').then(r => r.json()).then(j => { A = j; if (actual) mostrarAcerca(actual); }).catch(() => {});
+
+let D = null;
+let map = null;
+let chart = null;
+let marcas = {};
+let A = {};
+let actual = null;
+
+/* Información descriptiva de cada embalse */
+const mostrarAcerca = id => {
+  const sitio = D && D.sitios.find(x => x.id === id);
+  if (!sitio) return;
+
+  const info = A[id] || {};
+
+  $('acerca').innerHTML =
+    `<h3>Acerca de ${sitio.nombre}</h3>` +
+    `<p>${info.resumen || 'Información en preparación para este embalse.'}</p>` +
+    (info.importancia
+      ? `<p><b>Por qué importa:</b> ${info.importancia}</p>`
+      : '');
+};
+
+fetch('data/acerca.json')
+  .then(r => {
+    if (!r.ok) throw new Error('No se pudo cargar acerca.json');
+    return r.json();
+  })
+  .then(j => {
+    A = j;
+    if (actual) mostrarAcerca(actual);
+  })
+  .catch(() => {});
+
+/* Tarjeta de la medición ultrasónica de Lago Dagüey */
 async function cargarSensor() {
   const tarjeta = $('sensor');
 
   try {
-    const respuesta = await fetch('data/sensor/ultrasonico.json?' + Date.now());
+    const respuesta = await fetch(
+      'data/sensor/ultrasonico.json?' + Date.now()
+    );
 
     if (!respuesta.ok) {
-      throw new Error('No se pudo descargar el archivo');
+      throw new Error('No se pudo descargar el archivo del sensor');
     }
 
     const datos = await respuesta.json();
 
     if (!Array.isArray(datos) || datos.length === 0) {
       tarjeta.innerHTML = `
-        <h3>📡 Sensor ultrasónico</h3>
+        <h3>📡 Sensor ultrasónico — Lago Dagüey</h3>
         <p>Aún no hay mediciones disponibles.</p>`;
       return;
     }
@@ -81,102 +145,388 @@ async function cargarSensor() {
     const distancia = Number(lectura.distancia_cm);
     const fecha = new Date(lectura.hora);
 
+    const distanciaTexto = Number.isFinite(distancia)
+      ? `${distancia.toFixed(2)} cm`
+      : 'Sin dato';
+
+    const horaTexto = Number.isNaN(fecha.getTime())
+      ? (lectura.hora || 'No disponible')
+      : fecha.toLocaleString('es-PR', {
+          timeZone: 'America/Puerto_Rico'
+        });
+
+    const elevacionTexto = lectura.elevacion_ft == null
+      ? 'Sin calcular'
+      : `${lectura.elevacion_ft} ft`;
+
     tarjeta.innerHTML = `
-      <h3>📡 Sensor ultrasónico</h3>
+      <h3>📡 Sensor ultrasónico — ${
+        lectura.embalse || 'Lago Dagüey'
+      }</h3>
+
+      <p><b>Identificador:</b> ${
+        lectura.embalse_id || 'lago_daguey'
+      }</p>
+
+      <p><b>Estación USGS:</b>
+        <a href="https://waterdata.usgs.gov/monitoring-location/USGS-50146073"
+           target="_blank"
+           rel="noopener noreferrer">50146073</a>
+      </p>
+
       <div class="nums">
-        <div>Distancia medida
-          <b>${Number.isFinite(distancia) ? distancia + ' cm' : 'Sin dato'}</b>
+        <div>
+          Distancia medida
+          <b>${distanciaTexto}</b>
         </div>
-        <div>Elevación del agua
-          <b>${lectura.elevacion_ft == null
-            ? 'Sin calcular'
-            : lectura.elevacion_ft + ' ft'}</b>
+        <div>
+          Elevación del agua
+          <b>${elevacionTexto}</b>
         </div>
       </div>
-      <p class="sub">Hora de la medición:
-        ${Number.isNaN(fecha.getTime())
-          ? lectura.hora
-          : fecha.toLocaleString('es-PR', { timeZone: 'America/Puerto_Rico' })}
+
+      <p class="sub">Hora de la medición: ${horaTexto}</p>
+
+      <p class="sub">
+        La distancia medida no equivale directamente a la elevación
+        del agua. La elevación requiere una referencia de altura conocida.
       </p>
-      <p class="sub">La distancia no equivale directamente al nivel del embalse.</p>`;
+    `;
   } catch (error) {
     tarjeta.innerHTML = `
-      <h3>📡 Sensor ultrasónico</h3>
+      <h3>📡 Sensor ultrasónico — Lago Dagüey</h3>
       <p>No se pudo cargar la medición. Inténtalo más tarde.</p>`;
     console.error('Error al cargar el sensor:', error);
   }
 }
 
 cargarSensor();
-const km = (a,b,c,d) => { const r = x => x*Math.PI/180,
-  h = Math.sin(r(c-a)/2)**2 + Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;
-  return 12742*Math.asin(Math.sqrt(h)); };
-const cerca = (lat,lon) => D.sitios.reduce((m,s) => km(lat,lon,s.lat,s.lon) < km(lat,lon,m.lat,m.lon) ? s : m);
 
-function estado(s){
-  if (s.estado !== 'ok') return {k:'sin', t:'Sin datos por ahora', i:'⚪'};
-  const d = s.nivel_predicho - s.nivel_actual, u = Math.max(0.2, s.error_tipico);
-  if (d >  u) return {k:'sube',    t:'Subiendo', i:'🔺'};
-  if (d < -u) return {k:'baja',    t:'Bajando',  i:'🔻'};
-  return            {k:'estable', t:'Estable',  i:'🟢'};
+/* Calcula la distancia entre dos coordenadas */
+const km = (lat1, lon1, lat2, lon2) => {
+  const rad = x => x * Math.PI / 180;
+
+  const h =
+    Math.sin(rad(lat2 - lat1) / 2) ** 2 +
+    Math.cos(rad(lat1)) *
+    Math.cos(rad(lat2)) *
+    Math.sin(rad(lon2 - lon1) / 2) ** 2;
+
+  return 12742 * Math.asin(Math.sqrt(h));
+};
+
+const cerca = (lat, lon) =>
+  D.sitios.reduce((mejor, sitio) =>
+    km(lat, lon, sitio.lat, sitio.lon) <
+    km(lat, lon, mejor.lat, mejor.lon)
+      ? sitio
+      : mejor
+  );
+
+/* Estado de cada predicción */
+function estado(sitio) {
+  if (sitio.estado !== 'ok') {
+    return { k: 'sin', t: 'Sin datos por ahora', i: '⚪' };
+  }
+
+  const cambio = sitio.nivel_predicho - sitio.nivel_actual;
+  const margen = Math.max(0.2, sitio.error_tipico);
+
+  if (cambio > margen) {
+    return { k: 'sube', t: 'Subiendo', i: '🔺' };
+  }
+
+  if (cambio < -margen) {
+    return { k: 'baja', t: 'Bajando', i: '🔻' };
+  }
+
+  return { k: 'estable', t: 'Estable', i: '🟢' };
 }
 
-fetch('data/predicciones.json?' + Date.now()).then(r => r.json()).then(j => {
-  D = j;
-  const t = new Date(j.actualizado.replace(' ','T') + '-04:00');
-  const min = Math.round((Date.now() - t) / 60000);
-  $('act').textContent = 'Actualizado ' + (min < 90 ? `hace ${min} min` : t.toLocaleString('es-PR'));
+/* Carga las predicciones y construye el mapa */
+fetch('data/predicciones.json?' + Date.now())
+  .then(r => {
+    if (!r.ok) throw new Error('No se pudieron cargar las predicciones');
+    return r.json();
+  })
+  .then(j => {
+    D = j;
 
-  map = L.map('map').setView([18.2,-66.45], 9);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'}).addTo(map);
-  map.on('click', e => elegir(cerca(e.latlng.lat, e.latlng.lng).id));
+    const tiempo = j.actualizado
+      ? new Date(j.actualizado.replace(' ', 'T') + '-04:00')
+      : null;
 
-  D.sitios.forEach(s => {
-    const e = estado(s);
-    $('sel').add(new Option(s.nombre, s.id));
-    marcas[s.id] = L.circleMarker([s.lat,s.lon], {radius:11, color:'#fff', weight:2,
-      fillColor:COL[e.k], fillOpacity:1}).addTo(map).bindTooltip(s.nombre).on('click', () => elegir(s.id));
-    const d = document.createElement('div'); d.className = 'item'; d.style.borderColor = COL[e.k];
-    d.innerHTML = `<b>${s.nombre}</b>${e.i} ${e.t}` + (s.estado==='ok' ? ` · ${s.nivel_actual} → ${s.nivel_predicho} ft` : '');
-    d.onclick = () => { elegir(s.id); scrollTo({top:0, behavior:'smooth'}); };
-    $('lista').appendChild(d);
+    const minutos = tiempo
+      ? Math.round((Date.now() - tiempo.getTime()) / 60000)
+      : null;
+
+    $('act').textContent = tiempo
+      ? 'Actualizado ' + (
+          minutos < 90
+            ? `hace ${minutos} min`
+            : tiempo.toLocaleString('es-PR')
+        )
+      : 'Hora de actualización no disponible';
+
+    map = L.map('map').setView([18.2, -66.45], 9);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    map.on('click', e => {
+      elegir(cerca(e.latlng.lat, e.latlng.lng).id);
+    });
+
+    D.sitios.forEach(sitio => {
+      const e = estado(sitio);
+
+      $('sel').add(new Option(sitio.nombre, sitio.id));
+
+      marcas[sitio.id] = L.circleMarker(
+        [sitio.lat, sitio.lon],
+        {
+          radius: 11,
+          color: '#fff',
+          weight: 2,
+          fillColor: COL[e.k],
+          fillOpacity: 1
+        }
+      )
+      .addTo(map)
+      .bindTooltip(sitio.nombre)
+      .on('click', () => elegir(sitio.id));
+
+      const elemento = document.createElement('div');
+      elemento.className = 'item';
+      elemento.style.borderColor = COL[e.k];
+
+      elemento.textContent = '';
+
+      const nombre = document.createElement('b');
+      nombre.textContent = sitio.nombre;
+      elemento.appendChild(nombre);
+
+      elemento.appendChild(
+        document.createTextNode(
+          `${e.i} ${e.t}` +
+          (sitio.estado === 'ok'
+            ? ` · ${sitio.nivel_actual} → ${sitio.nivel_predicho} ft`
+            : '')
+        )
+      );
+
+      elemento.onclick = () => {
+        elegir(sitio.id);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      $('lista').appendChild(elemento);
+    });
+
+    if (D.sitios.length > 0) {
+      const hash = decodeURIComponent(location.hash.slice(1));
+      const idInicial = D.sitios.some(s => s.id === hash)
+        ? hash
+        : D.sitios[0].id;
+
+      elegir(idInicial);
+    }
+  })
+  .catch(error => {
+    $('act').textContent = 'No se pudieron cargar las predicciones.';
+    $('det').textContent =
+      'No fue posible cargar los datos de los embalses. Inténtalo más tarde.';
+    console.error('Error al cargar predicciones:', error);
   });
-  elegir(location.hash.slice(1) in marcas ? location.hash.slice(1) : D.sitios[0].id);
-});
 
 $('sel').onchange = () => elegir($('sel').value);
-$('gps').onclick = () => navigator.geolocation.getCurrentPosition(
-  p => elegir(cerca(p.coords.latitude, p.coords.longitude).id),
-  () => alert('No se pudo obtener tu ubicación. Elige un embalse en el mapa.'));
 
-async function elegir(id){
-  const s = D.sitios.find(x => x.id === id), e = estado(s);
-  actual = id; mostrarAcerca(id);
-  $('sel').value = id; location.hash = id; map.flyTo([s.lat,s.lon], 10);
-  const t0 = s.hora_medicion ? new Date(s.hora_medicion.replace(' ','T')) : null;
-  const n = t0 ? Math.max(1, Math.round((new Date(s.hora_objetivo.replace(' ','T')) - t0) / 3600000)) : 0;
-  $('det').innerHTML = s.estado !== 'ok'
-    ? `<div class="estado">${s.nombre}</div><p class="sub">Este sitio no tiene datos recientes del sensor o aún no tiene modelo entrenado.</p>`
-    : `<div class="estado" style="color:${COL[e.k]}">${e.i} ${e.t}</div><div class="sub">${s.nombre}</div>
-       <div class="nums"><div>Ahora<b>${s.nivel_actual} ft</b></div>
-       <div>En ${n} horas<b>${s.nivel_predicho} ft</b></div>
-       <div>Margen típico<b>±${s.error_tipico}</b></div></div>
-       <p class="sub">Última medición: ${s.hora_medicion.slice(5,16).replace('T',' ')}.
-       Se considera “estable” si el cambio previsto es menor que el margen de error del modelo.</p>`;
-  if (chart) chart.destroy();
-  if (s.estado !== 'ok') return;
-  const h = await (await fetch(`data/historial/${id}.json?` + Date.now())).json();
-  const hs = h.slice(-(n + 1));
-  const fut = Array.from({length: n}, (_, i) => new Date(t0.getTime() + (i + 1) * 3600000));
-  const fmt = d => String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + ':00';
-  const lab = [...hs.map(x => x.t.replace(' ','T').slice(5,16)), ...fut.map(fmt)];
-  const real = [...hs.map(x => x.nivel), ...Array(n).fill(null)];
-  const nivel0 = hs.length ? hs[hs.length-1].nivel : s.nivel_actual;
-  const pred = [...Array(Math.max(hs.length-1,0)).fill(null), nivel0,
-    ...fut.map((_, i) => +(nivel0 + (s.nivel_predicho - nivel0) * (i + 1) / n).toFixed(2))];
-  chart = new Chart($('g'), {type:'line', data:{labels:lab, datasets:[
-    {label:'Medido (últimas ' + n + ' h)', data:real, borderColor:'#1f77b4', pointRadius:0},
-    {label:'Predicción +' + n + ' h', data:pred, borderColor:'#2ca02c', borderDash:[6,4], pointRadius:2}]},
-    options:{scales:{y:{title:{display:true, text:'Nivel (pies)'}}, x:{ticks:{maxTicksLimit:8}}}}});
+$('gps').onclick = () => {
+  if (!navigator.geolocation) {
+    alert('Tu navegador no permite obtener la ubicación.');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      if (D && D.sitios.length) {
+        elegir(cerca(
+          p.coords.latitude,
+          p.coords.longitude
+        ).id);
+      }
+    },
+    () => alert(
+      'No se pudo obtener tu ubicación. Elige un embalse en el mapa.'
+    )
+  );
+};
+
+/* Muestra los detalles y el gráfico del embalse seleccionado */
+async function elegir(id) {
+  if (!D || !map) return;
+
+  const sitio = D.sitios.find(x => x.id === id);
+  if (!sitio) return;
+
+  const e = estado(sitio);
+
+  actual = id;
+  mostrarAcerca(id);
+
+  $('sel').value = id;
+  location.hash = id;
+
+  map.flyTo([sitio.lat, sitio.lon], 10);
+
+  const tiempoInicial = sitio.hora_medicion
+    ? new Date(sitio.hora_medicion.replace(' ', 'T'))
+    : null;
+
+  const tiempoObjetivo = sitio.hora_objetivo
+    ? new Date(sitio.hora_objetivo.replace(' ', 'T'))
+    : null;
+
+  const horas = tiempoInicial && tiempoObjetivo
+    ? Math.max(
+        1,
+        Math.round(
+          (tiempoObjetivo - tiempoInicial) / 3600000
+        )
+      )
+    : 0;
+
+  if (sitio.estado !== 'ok') {
+    $('det').innerHTML = `
+      <div class="estado">${sitio.nombre}</div>
+      <p class="sub">
+        Este sitio no tiene datos recientes o aún no tiene
+        un modelo entrenado.
+      </p>`;
+  } else {
+    $('det').innerHTML = `
+      <div class="estado" style="color:${COL[e.k]}">
+        ${e.i} ${e.t}
+      </div>
+      <div class="sub">${sitio.nombre}</div>
+      <div class="nums">
+        <div>Ahora
+          <b>${sitio.nivel_actual} ft</b>
+        </div>
+        <div>En ${horas} horas
+          <b>${sitio.nivel_predicho} ft</b>
+        </div>
+        <div>Margen típico
+          <b>±${sitio.error_tipico}</b>
+        </div>
+      </div>
+      <p class="sub">
+        Última medición: ${sitio.hora_medicion || 'No disponible'}.
+        Se considera “estable” si el cambio previsto es menor
+        que el margen de error del modelo.
+      </p>`;
+  }
+
+  if (chart) {
+    chart.destroy();
+    chart = null;
+  }
+
+  if (sitio.estado !== 'ok') return;
+
+  try {
+    const respuesta = await fetch(
+      `data/historial/${encodeURIComponent(id)}.json?${Date.now()}`
+    );
+
+    if (!respuesta.ok) {
+      throw new Error('No se pudo cargar el historial');
+    }
+
+    const historial = await respuesta.json();
+    const hs = historial.slice(-(horas + 1));
+
+    const futuro = tiempoInicial
+      ? Array.from(
+          { length: horas },
+          (_, i) => new Date(
+            tiempoInicial.getTime() + (i + 1) * 3600000
+          )
+        )
+      : [];
+
+    const formatoHora = fecha =>
+      String(fecha.getMonth() + 1).padStart(2, '0') + '-' +
+      String(fecha.getDate()).padStart(2, '0') + 'T' +
+      String(fecha.getHours()).padStart(2, '0') + ':00';
+
+    const etiquetas = [
+      ...hs.map(x => x.t.replace(' ', 'T').slice(5, 16)),
+      ...futuro.map(formatoHora)
+    ];
+
+    const reales = [
+      ...hs.map(x => x.nivel),
+      ...Array(horas).fill(null)
+    ];
+
+    const nivelInicial = hs.length
+      ? hs[hs.length - 1].nivel
+      : sitio.nivel_actual;
+
+    const prediccion = [
+      ...Array(Math.max(hs.length - 1, 0)).fill(null),
+      nivelInicial,
+      ...futuro.map((_, i) =>
+        +(
+          nivelInicial +
+          (sitio.nivel_predicho - nivelInicial) *
+          (i + 1) / Math.max(horas, 1)
+        ).toFixed(2)
+      )
+    ];
+
+    chart = new Chart($('g'), {
+      type: 'line',
+      data: {
+        labels: etiquetas,
+        datasets: [
+          {
+            label: `Medido (últimas ${horas} h)`,
+            data: reales,
+            borderColor: '#1f77b4',
+            pointRadius: 0
+          },
+          {
+            label: `Predicción +${horas} h`,
+            data: prediccion,
+            borderColor: '#2ca02c',
+            borderDash: [6, 4],
+            pointRadius: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: 'Nivel (pies)'
+            }
+          },
+          x: {
+            ticks: { maxTicksLimit: 8 }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error al cargar el historial:', error);
+  }
 }
-</script></body></html>
+</script>
+</body>
+</html>
+
