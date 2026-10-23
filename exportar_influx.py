@@ -1,4 +1,3 @@
-
 import os
 import json
 from pathlib import Path
@@ -23,6 +22,9 @@ from(bucket: "{os.environ["INFLUX_BUCKET"]}")
 
 datos = [
     {
+        "embalse_id": "lago_daguey",
+        "embalse": "Lago Dagüey",
+        "usgs_site": "50146073",
         "hora": registro.get_time().isoformat(),
         "distancia_cm": round(float(registro.get_value()), 2),
         "elevacion_ft": None
