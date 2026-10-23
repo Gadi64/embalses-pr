@@ -25,6 +25,10 @@ select{flex:1;min-width:0}button{background:#0b3d5c;color:#fff;border:0;cursor:p
   <div class="bar"><select id="sel"></select><button id="gps">📍 Cerca de mí</button></div>
   <div class="card"><canvas id="g" height="160"></canvas></div>
   <div class="card" id="det">Toca un embalse en el mapa o en la lista.</div>
+  <div class="card" id="sensor">
+  <h3>📡 Sensor ultrasónico</h3>
+  <p>Cargando última medición…</p>
+</div>
   <div id="map"></div>
   <div class="card" id="acerca"></div>
   <div class="lista" id="lista"></div>
@@ -54,7 +58,56 @@ const mostrarAcerca = id => {
     (a.importancia ? `<p><b>Por qué importa:</b> ${a.importancia}</p>` : '');
 };
 fetch('data/acerca.json').then(r => r.json()).then(j => { A = j; if (actual) mostrarAcerca(actual); }).catch(() => {});
+async function cargarSensor() {
+  const tarjeta = $('sensor');
 
+  try {
+    const respuesta = await fetch('data/sensor/ultrasonico.json?' + Date.now());
+
+    if (!respuesta.ok) {
+      throw new Error('No se pudo descargar el archivo');
+    }
+
+    const datos = await respuesta.json();
+
+    if (!Array.isArray(datos) || datos.length === 0) {
+      tarjeta.innerHTML = `
+        <h3>📡 Sensor ultrasónico</h3>
+        <p>Aún no hay mediciones disponibles.</p>`;
+      return;
+    }
+
+    const lectura = datos[datos.length - 1];
+    const distancia = Number(lectura.distancia_cm);
+    const fecha = new Date(lectura.hora);
+
+    tarjeta.innerHTML = `
+      <h3>📡 Sensor ultrasónico</h3>
+      <div class="nums">
+        <div>Distancia medida
+          <b>${Number.isFinite(distancia) ? distancia + ' cm' : 'Sin dato'}</b>
+        </div>
+        <div>Elevación del agua
+          <b>${lectura.elevacion_ft == null
+            ? 'Sin calcular'
+            : lectura.elevacion_ft + ' ft'}</b>
+        </div>
+      </div>
+      <p class="sub">Hora de la medición:
+        ${Number.isNaN(fecha.getTime())
+          ? lectura.hora
+          : fecha.toLocaleString('es-PR', { timeZone: 'America/Puerto_Rico' })}
+      </p>
+      <p class="sub">La distancia no equivale directamente al nivel del embalse.</p>`;
+  } catch (error) {
+    tarjeta.innerHTML = `
+      <h3>📡 Sensor ultrasónico</h3>
+      <p>No se pudo cargar la medición. Inténtalo más tarde.</p>`;
+    console.error('Error al cargar el sensor:', error);
+  }
+}
+
+cargarSensor();
 const km = (a,b,c,d) => { const r = x => x*Math.PI/180,
   h = Math.sin(r(c-a)/2)**2 + Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;
   return 12742*Math.asin(Math.sqrt(h)); };
