@@ -46,3 +46,13 @@ jobs:
             git commit -m "Actualizar mediciones del sensor"
             git push
           fi
+      - name: Verificar archivo JSON
+        if: always()
+        run: |
+          echo "Verificando archivo de mediciones..."
+          ls -la docs/data/sensor/ || true
+          if [ -f docs/data/sensor/ultrasonico.json ]; then
+            echo "El archivo ultrasonico.json existe."
+          else
+            echo "El archivo ultrasonico.json NO existe."
+          fi
