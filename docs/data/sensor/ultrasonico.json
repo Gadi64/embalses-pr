@@ -1,7 +1,18 @@
 [
   {
+    "embalse_id": "lago_daguey",
+    "embalse": "Lago Dagüey",
+    "usgs_site": "50146073",
     "hora": "2026-10-23T15:00:00+00:00",
     "distancia_cm": 136.4,
+    "elevacion_ft": null
+  },
+  {
+    "embalse_id": "lago_daguey",
+    "embalse": "Lago Dagüey",
+    "usgs_site": "50146073",
+    "hora": "2026-10-23T17:56:17.817250+00:00",
+    "distancia_cm": 20.65,
     "elevacion_ft": null
   }
 ]
